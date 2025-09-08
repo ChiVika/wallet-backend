@@ -20,7 +20,8 @@ app.get('/', (request, response) => {
         endpoins: {
             account: '/api/accounts',
             accountById: '/api/accounts/:id',
-            accountAdd: '/api/accounts/add'
+            accountAdd: '/api/accounts/add',
+            transaction: '/api/transactions'
         }
     })
 })
