@@ -21,7 +21,9 @@ app.get('/', (request, response) => {
             account: '/api/accounts',
             accountById: '/api/accounts/:id',
             accountAdd: '/api/accounts/add',
-            transaction: '/api/transactions'
+            transaction: '/api/transactions/:id_account',
+            transactionAdd: '/api/transactions/add',
+            categoryById: '/api/category/:id_category'
         }
     })
 })

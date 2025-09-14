@@ -10,6 +10,7 @@ async function runMigration() {
         await Account.CreateTable();
         await Category.CreateTable();
         await Transaction.CreateTable();
+        await Transaction.createBalanceTrigger();
 
         console.log('Database initialized successfully!');
     }

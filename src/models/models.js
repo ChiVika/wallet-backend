@@ -55,12 +55,39 @@ class Transaction{
                 )
             `;
             await promisePool.execute(query);
+
+            
+
             console.log('Table "transaction" created successfully');
         }
         catch(error){
             console.error('Table creation "transaction" failed');
         }
     }
+
+    static async createBalanceTrigger() {
+        try {
+            const update_balance = `
+                CREATE TRIGGER update_balance
+                AFTER INSERT ON transaction
+                FOR EACH ROW
+                BEGIN
+                    UPDATE account
+                    SET balance = COALESCE(balance, 0) +
+                        (SELECT IF(type = 'income', NEW.amount, -NEW.amount)
+                        FROM category
+                        WHERE id = NEW.category_id)
+                    WHERE id = NEW.account_id;
+                END
+            `;
+            await promisePool.query(update_balance);
+            console.log('Триггер успешно создан');
+        } catch (error) {
+            console.error('Ошибка при создании триггера:', error.message); 
+        }
+    }
+
+    
 }
 
 export { Account, Category, Transaction };
