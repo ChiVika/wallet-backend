@@ -34,7 +34,23 @@ class TransactionControler{
 
     static async addTransaction(req,res){
         try{
-            const {account_id, category_id, amount} = req.body;
+            const {account_id, category_type, category_name, amount} = req.body;
+            let category_id;
+        
+            const [existingCategory] = await promisePool.execute(
+                `SELECT id FROM category WHERE name = ? AND type = ?`,
+                [category_name, category_type]
+            );
+
+            if (existingCategory.length > 0) {
+                category_id = existingCategory[0].id;
+            } else {
+                const [newCategory] = await promisePool.execute(
+                    `INSERT INTO category (name, type) VALUES (?, ?)`,
+                    [category_name, category_type]
+                );
+                category_id = newCategory.insertId;
+            }
 
             const [categoryRows] = await promisePool.execute(`
                     SELECT type FROM category WHERE id = ?`
@@ -48,7 +64,6 @@ class TransactionControler{
                 `, [account_id])
                 const currentBalance = account[0].balance || 0;
                 if (currentBalance < amount) {
-                    console.log('Недостаточно средств')
                     throw new Error('Недостаточно средств на счете');
                 }
             }
@@ -57,18 +72,10 @@ class TransactionControler{
                 INSERT INTO transaction (account_id, category_id, amount) VALUES (?, ?, ?)
             `, [account_id, category_id, amount])
 
-            console.log('row: ', result);
-
-
-            const [rows] = await promisePool.execute(
-                `SELECT * FROM transaction WHERE id = ?`,
-                [result.insertId]
-            );
 
             res.status(201).json({
                 success: true,
-                message: 'Счет успешно создан',
-                data: rows[0]
+                message: 'Счет успешно создан'
             });
 
 
