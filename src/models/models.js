@@ -80,12 +80,38 @@ class Transaction{
                     WHERE id = NEW.account_id;
                 END
             `;
+            await promisePool.query(`DROP TRIGGER IF EXISTS update_balance`);
             await promisePool.query(update_balance);
-            console.log('Триггер успешно создан');
+            console.log('Триггер добавления транзакции успешно создан');
         } catch (error) {
             console.error('Ошибка при создании триггера:', error.message); 
         }
     }
+
+    static async deleteTransactionTrigger(){
+        try{
+            const delete_row = `
+                CREATE TRIGGER delete_row
+                AFTER DELETE ON transaction
+                FOR EACH ROW
+                BEGIN
+                    UPDATE account
+                    SET balance = COALESCE(balance, 0) +
+                        (SELECT IF(type = 'income', -OLD.amount, OLD.amount)
+                        FROM category
+                        WHERE id = OLD.category_id)
+                    WHERE id = OLD.account_id;
+                END
+            `
+            await promisePool.query(`DROP TRIGGER IF EXISTS delete_row;`)
+            await promisePool.query(delete_row);
+            console.log('Триггер удаления записи успешно создан');
+        }
+        catch(error){
+            console.log("Триггер удаление транзакции работает неверно", error);
+        }
+    }
+
 
     
 }

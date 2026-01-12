@@ -22,8 +22,13 @@ app.get('/', (request, response) => {
             accountById: '/api/accounts/:id',
             accountAdd: '/api/accounts/add',
             transaction: '/api/transactions/:id_account',
+            transactionById: '/api/transaction/:id',
             transactionAdd: '/api/transactions/add',
-            categoryById: '/api/category/:id_category'
+            editTransaction: '/api/transactions/edit/:id',
+            transactionDelete: '/api/transactions/delete/:id',
+            categoryById: '/api/category/:id_category',
+            categories: '/api/category',
+            deleteAccount: '/accounts/delete/:id_account'
         }
     })
 })

@@ -11,6 +11,7 @@ async function runMigration() {
         await Category.CreateTable();
         await Transaction.CreateTable();
         await Transaction.createBalanceTrigger();
+        await Transaction.deleteTransactionTrigger();
 
         console.log('Database initialized successfully!');
     }

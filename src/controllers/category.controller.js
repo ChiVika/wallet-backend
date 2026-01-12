@@ -24,6 +24,22 @@ class CategoryController{
             })
         }
     }
+
+    static async getCategories(req, res){
+        try{
+            const [rows] = await promisePool.execute(`
+                SELECT * FROM category
+            `)
+            res.status(200).json({
+                success: true,
+                count: rows.length,
+                data: rows
+            })
+        }
+        catch(error){
+            console.log("Ошибка получения категорий");
+        }
+    }
 }
 
 export {CategoryController}

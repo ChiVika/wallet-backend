@@ -32,6 +32,42 @@ class TransactionControler{
 
     }
 
+    static async getTransactionById(req, res){
+        const {id} = req.params;
+        try{
+            const [rows] = await promisePool.execute(`
+                SELECT
+                    t.id, 
+                    t.account_id, 
+                    t.amount, 
+                    c.name as category_name, 
+                    c.type as category_type
+                FROM transaction t
+                LEFT JOIN category c ON t.category_id = c.id 
+                WHERE t.id = ?
+            `, [id])
+            if (rows.length === 0){
+                return res.status(404).json({
+                    success: false,
+                    message: `Счет с id ${id} не найден`,
+                    error: error.message
+                });
+            }
+            res.status(200).json({
+                success: true,
+                data: rows[0]
+            })
+
+        }
+        catch(error){
+            res.status(500).json({
+                success: false,
+                message: 'Ошибка при получении данных',
+                error: error.message
+            });
+        }
+    }
+
     static async addTransaction(req,res){
         try{
             const {account_id, category_type, category_name, amount} = req.body;
@@ -88,6 +124,60 @@ class TransactionControler{
                 error: error.message
             });
 
+        }
+    }
+    static async deleteTransactions(req,res){
+        try{
+            const {id} = req.params;
+            const [rows] = await promisePool.execute(`
+                DELETE FROM Transaction WHERE id = ?
+            `, [id])
+            res.status(201).json({
+                success: true,
+                message: `Транзакция под номером ${id} успешно удалена`
+            });
+        }
+        catch(error){
+            res.status(500).json({
+                success: false,
+                message: 'Ошибка при удалении транзакции',
+                error: error.message
+            });
+        }
+    }
+
+    static async editTransaction(req, res){
+        try{
+            const {type, name, amount} = req.body;
+            const id = req.params.id;
+
+            const [currentTransaction] = await promisePool.execute(`
+                SELECT * FROM transaction WHERE id = ?
+            `, [id]);
+            console.log(currentTransaction[0]);
+            const categoryId = currentTransaction[0].category_id;
+            await promisePool.execute(`
+                UPDATE transaction 
+                SET amount = ?
+                WHERE id = ?
+            `, [amount, id]);
+
+            await promisePool.execute(`
+                UPDATE category 
+                SET type = ?, name = ?
+                WHERE id = ?
+            `, [type, name, categoryId]);
+            res.status(201).json({
+                success: true,
+                message: `Транзакция под номером ${id} успешно обновлена`
+            });
+        }
+        catch(error){
+            res.status(500).json({
+                success: false,
+                message: 'Ошибка при редактировании транзакции',
+                error: error.message
+            });
         }
     }
         
